@@ -19,3 +19,6 @@ Web scraping: Python (BeautifulSoup, Selenium)
 Image processing: rembg + Pillow  
 Hosting: Netlify  
 Data format: JSON (stored in /public/jsons/)  
+
+<img width="1602" alt="Screenshot 2025-06-30 at 1 18 23 PM" src="https://github.com/user-attachments/assets/59dc6b06-4cda-402e-bd71-2c1323bab4c5" />
+
