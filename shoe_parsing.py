@@ -1,6 +1,16 @@
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from rembg import remove
+from PIL import Image
+import requests
+from io import BytesIO
+import os
+import base64
+from selenium.webdriver.common.by import By
+import time
 
 url = "https://us.puma.com/us/en/women/shoes/lifestyle"
 headers = {
@@ -28,11 +38,6 @@ for item in products:
 
 df_puma = pd.DataFrame(results)
 df_puma['company'] = 'Puma'
-
-
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from bs4 import BeautifulSoup
 
 options = Options()
 options.add_argument("--headless")
@@ -70,12 +75,158 @@ df = pd.concat([df_puma, df_nike])
 df = df.reset_index(drop=True)
 
 
-from rembg import remove
-from PIL import Image
-import requests
-from io import BytesIO
-import os
-import base64
+
+
+options = Options()
+options.add_argument("--headless")
+driver = webdriver.Chrome(options=options)
+driver.get("https://us.supreme.com/collections/t-shirts")
+time.sleep(5)
+
+soup = BeautifulSoup(driver.page_source, 'html.parser')
+driver.quit()
+
+items = soup.find_all("li", class_="sc-2s21k7-3")
+products = []
+
+for item in items:
+    try:
+        link_tag = item.find("a")
+        title = item.find("span", {"aria-label": False}).text.strip()
+        price = item.find("span", {"aria-label": "product price"}).text.strip()
+        link = "https://us.supreme.com" + link_tag["href"]
+        img_tag = item.find("img")
+        image_url = "https:" + img_tag["src"] if img_tag and img_tag.get("src") else None
+
+        products.append({
+            "title": title,
+            "price": price,
+            "link": link,
+            "image": image_url
+        })
+    except Exception as e:
+        print("Error parsing item:", e)
+
+df_supreme = pd.DataFrame(products)
+
+
+options = Options()
+options.add_argument("--headless")
+driver = webdriver.Chrome(options=options)
+driver.get("https://www.stussy.com/collections/pants")
+time.sleep(5)
+
+soup = BeautifulSoup(driver.page_source, "html.parser")
+driver.quit()
+
+items = soup.find_all("li", class_="collection-grid__grid-item")
+products = []
+
+for item in items:
+    try:
+        product = item.find("div", class_="product-card")
+        title = product.find("a", class_="product-card__title-link").text.strip()
+        relative_link = product.find("a", class_="product-card__title-link")["href"]
+        link = "https://www.stussy.com" + relative_link
+        image_tag = product.find("div", class_="product-card__image--featured").find("img")
+        image = "https:" + image_tag["src"] if image_tag else None
+        price_tag = product.find("span", class_="product-card__price-sold-out")
+        price = price_tag.text.strip() if price_tag else "Available"
+
+        products.append({
+            "title": title,
+            "price": price,
+            "link": link,
+            "image": image
+        })
+    except Exception as e:
+        print("Error parsing item:", e)
+
+df_stussy = pd.DataFrame(products)
+
+
+options = Options()
+options.add_argument("--headless")
+options.add_argument("--disable-gpu")
+driver = webdriver.Chrome(options=options)
+
+url = "https://kangol.com/collections/top-sellers"
+driver.get(url)
+time.sleep(5) 
+
+soup = BeautifulSoup(driver.page_source, "html.parser")
+driver.quit()
+
+products = []
+items = soup.find_all("li", class_="ns-product")
+for item in items:
+    try:
+        title = item.find("a", class_="text-black no-underline ns-prod-link prodName").text.strip()
+        link = item.find("a", class_="ns-prod-link")["href"]
+        full_link = link if link.startswith("http") else f"https://kangol.com{link}"
+        price = item.find("span", class_="text-black ns-price").text.strip()
+        image = item.find("img")["src"]
+        
+        products.append({
+            "title": title,
+            "price": price,
+            "link": full_link,
+            "image": image
+        })
+    except Exception as e:
+        print("Error parsing item:", e)
+
+df_kangol = pd.DataFrame(products)
+
+
+options = Options()
+options.add_argument("--headless")
+driver = webdriver.Chrome(options=options)
+
+url = "https://wearebraindead.com/collections/accessories"
+driver.get(url)
+time.sleep(5)
+
+soup = BeautifulSoup(driver.page_source, "html.parser")
+driver.quit()
+
+products = []
+items = soup.find_all("div", class_="_product-card")
+
+for item in items:
+    try:
+        link_tag = item.find("a", href=True)
+        link = "https://wearebraindead.com" + link_tag["href"]
+        title = link_tag["aria-label"]
+        image = "https:" + link_tag.find("img")["src"]
+        price_tag = item.find("div", class_="_product__price")
+        price = price_tag.text.strip().replace("\n", "") if price_tag else "N/A"
+
+        products.append({
+            "title": title,
+            "price": price,
+            "link": link,
+            "image": image
+        })
+    except Exception as e:
+        print("Error parsing item:", e)
+
+df_acces = pd.DataFrame(products)
+
+
+df = pd.concat([df_puma, df_nike])
+df = df.reset_index(drop=True)
+df['cloth'] = 'Shoes'
+df_acces['company'] = 'BrainDead'
+df_kangol['company'] = 'Kangol'
+df_stussy['company'] = 'Stussy'
+df_supreme['company'] = 'Supreme'
+df_acces['cloth'] = 'Accessories'
+df_kangol['cloth'] = 'Hat'
+df_stussy['cloth'] = 'Pants'
+df_supreme['cloth'] = 'Tees'
+df_new = pd.concat([df_acces, df_kangol, df_stussy, df_supreme])
+
 
 def image_to_base64(image):
     buffer = BytesIO()
@@ -89,9 +240,25 @@ for url in df.image:
     output_image = remove(input_image)
     img_b64 = image_to_base64(output_image)
     removed_images.append(img_b64)
-
 df['images_upd'] = removed_images
 
+removed_images = []
+for url in df_new.image:
+    response = requests.get(url)
+    input_image = Image.open(BytesIO(response.content)).convert("RGBA")
+    output_image = remove(input_image)
+    img_b64 = image_to_base64(output_image)
+    removed_images.append(img_b64)
+df_new['images_upd'] = removed_images
+
+df_combined = pd.concat([df, df_new])
+df_combined = df_combined.reset_index(drop=True)
+
+df_combined[df_combined.cloth=='Shoes'].to_json('shoe_images.json', orient='records', indent=2)
+df_combined[df_combined.cloth=='Hat'].to_json('hat_images.json', orient='records', indent=2)
+df_combined[df_combined.cloth=='Tees'].to_json('tee_images.json', orient='records', indent=2)
+df_combined[df_combined.cloth=='Pants'].to_json('pants_images.json', orient='records', indent=2)
+df_combined[df_combined.cloth=='Accessories'].to_json('acces_images.json', orient='records', indent=2)
 
 df.to_json('shoe_images.json', orient='records', indent=2)
 
