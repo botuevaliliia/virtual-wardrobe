@@ -1,0 +1,79 @@
+.wardrobe {
+  height: 100vh;
+  background-color: #fdfdfd;
+  padding: 0px 20px 20px;
+  box-sizing: border-box;
+  overflow-y: auto;
+  border-right: 2px solid #ddd;
+  display: flex;
+  flex-direction: column;
+}
+
+.wardrobe h2 {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 5px;
+  text-align: center;
+}
+
+.wardrobe-slot {
+  display: flex;
+  align-items: center;
+  /* margin-bottom: 16px; */
+  gap: 12px;
+}
+
+.wardrobe-item-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.wardrobe-item {
+  width: 100px;
+  /* height: auto; */
+  object-fit: contain;
+  border-radius: 6px;
+  /* margin-bottom: -15px; */
+}
+
+.wardrobe-slot.pants .wardrobe-item {
+  width: 140px;
+}
+
+.item-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.remove-btn {
+  background: rgb(74, 71, 71);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+  font-weight: bold;
+  line-height: 20px;
+  padding: 0;
+}
+
+.view-link {
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  text-decoration: none;
+}
+
+.wardrobe-total {
+  font-size: 1rem;
+  font-weight: bold;
+  text-align: center;
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid #ccc;
+}

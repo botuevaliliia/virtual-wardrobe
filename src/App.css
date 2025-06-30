@@ -1,0 +1,18 @@
+.app-container {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.left-panel {
+  width: 20%;
+  border-right: 1px solid #ccc;
+  background-color: #fafafa;
+  overflow-y: auto;
+}
+
+.right-panel {
+  width: 80%;
+  position: relative;
+}
